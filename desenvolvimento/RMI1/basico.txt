@@ -1,0 +1,37 @@
+neste primeiro momento, irei fazer um programa quase comun, o objetivo é conseguir imprimir na tela valor de rax, e tambem executar binário externo, ou seja RMI instala teste1.bin em um buffer, e manda ponteiro RIP para la.
+
+e foi um sucesso.
+
+para compilar teste1.asm:
+nasm -f bin teste1.asm -o teste1.bin
+
+para compilar RMI:
+nasm -f elf64 RMI.asm -o RMI.o
+ld RMI.o -o RMI
+
+o arquivo teste1.bin deve estar no mesmo local de RMI, para testa-lo utilize no terminal ./RMI
+
+o print que fiz imprime ao contrario, e utiliza caracteres 0x40 para representação:
+
+40 '@'   41 'A'   42 'B'   43 'C'
+44 'D'   45 'E'   46 'F'   47 'G'
+48 'H'   49 'I'   4A 'J'   4B 'K'
+4C 'L'   4D 'M'   4E 'N'   4F 'O'
+
+0000 = @ = 0
+0001 = A = 1
+0010 = B = 2
+0011 = C = 3
+0100 = D = 4
+0101 = E = 5
+0110 = F = 6
+0111 = G = 7
+1000 = H = 8
+1001 = I = 9
+1010 = J = 10
+1011 = K = 11
+1100 = L = 12
+1101 = M = 13
+1110 = N = 14
+1111 = O = 15
+
