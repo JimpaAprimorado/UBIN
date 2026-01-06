@@ -13,7 +13,7 @@ mov [rsp+40], rbx
 mov [rsp+48], rcx
 
 ;rax abaixo é só teste e deverá ser removido, pois ele ja vem como entrada de outro Ubin.
-mov rax, 0x0123456789ABCDEF ;em rax fica assim EFCDAB8967452301 = teste
+mov rax, 0x0123456789ABCDEF ;em rax fica assim EFCDAB8967452301 = teste, se quiser testar outros valores de entrada escreva aqui
 
 
 mov rcx, rax ;fazendo copia
