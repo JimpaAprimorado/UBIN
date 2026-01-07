@@ -1,0 +1,36 @@
+para compilar RMI2.asm:
+
+nasm -f elf64 RMI2.asm -o RMI.o
+
+ld RMI2.asm -o RMI
+
+
+siga o arquivo PROCEDIMENTOS para montar os Ubins, quando tiver tudo ajustado abra o terminal e execute o RMI.
+
+para mais testes de resultados diferentes, abra o arquivo s1.asm ou s2.asm e altere o valor do imediato, recompile para binario e execute novamente RMI.
+
+
+os resultados serão printados com caracteres da tabela ASCII 0x40:
+
+
+40 '@'   41 'A'   42 'B'   43 'C'
+44 'D'   45 'E'   46 'F'   47 'G'
+48 'H'   49 'I'   4A 'J'   4B 'K'
+4C 'L'   4D 'M'   4E 'N'   4F 'O'
+
+0000 = @ = 0
+0001 = A = 1
+0010 = B = 2
+0011 = C = 3
+0100 = D = 4
+0101 = E = 5
+0110 = F = 6
+0111 = G = 7
+1000 = H = 8
+1001 = I = 9
+1010 = J = 10
+1011 = K = 11
+1100 = L = 12
+1101 = M = 13
+1110 = N = 14
+1111 = O = 15
