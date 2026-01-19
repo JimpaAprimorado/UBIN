@@ -1,0 +1,192 @@
+Oque pretendia fazer:
+
+Construir CBTR para ler arquivo play.ubin gerado pelo programa VPu(VisualPlayUbins) feito na godot.
+
+eu ainda não fiz o VPu, então iria fazer o arquivo play.ubin na mão:
+
+
+===================play.ubin==========================
+@UBINs:
+start.bin 	-> (size=20, off=0)
+jmpr14		-> (size=3, off=20)
+print.bin 	-> (size=157, off=23)
+jmpr14		-> (size=3, off=180)
+s1.bin	  	-> (size=8, off=183)
+jmpr14		-> (size=3, off=191)
+exit.bin  	-> (size=1, off=194)
+
+
+@MUBIns:
+#vai seguir mesmo sistema de Ubins
+
+@IUBINs:
+jmp.bin -> (size=12, r14=2, r15=12)
+rax.bin -> (size=7, rax=2)
+rbx.bin -> (size=7, rbx=2)
+
+@EST:
+[20]	-> (size=8, off=195)
+[40]	-> (size=8, off=203)
+
+@CPU_1:
+jmp(start)	-> (off=211, r14=223, r15=0)
+rax(@EST[1])-> (off=223, rax=195)
+rbx(@EST[2])-> (off=230, rbx=203)
+jmp(s1)		-> (off=237, r14=249, r15=183)
+jmp(print)	-> (off=249, r14=261, r15=23)
+jmp(exit)	-> (off=261, r14=0"aqui não faz diferença", r15=194) -> 
+endoffset=273 #offset real final dos IUbins.
+
+@MULBANREGs:#reservado para dados visuais
+
+=================================================================
+
+o problema é que para que eu consiga parsear este arquivo em assembly vou demorar muito tempo. como estou sozinho fazendo isto, por enquanto estou buscando caminhos alternativos para alcançar o objetivo final mais rapidamente.
+
+então descidi fazer este RMI3 da seguinte forma:
+
+========================== RMI3 ============================
+
+vou fazer como fiz o RMI1, porem ja implementando toda a funcionalidade real dos IU/Ubins, ainda sem MUbins, ou seja eu vou fazer apenas um unico programa.asm simulando o trabalho ja feito por VPuG. e executa-lo via RMI.
+
+isso é para comprovar o conceito de saltos, e a estrutura que estou construindo.
+
+estou pensando seriamente se nos proximos testes, insisto em fazer parse de play.ubin ou crio o VPuG na godot. em breve darei mais detalhes reveladores sobre o projeto.
+
+então iniciei fazendo meu teste2.asm seguindo a mesma ideia do código que fiz play.ubin que esta acima.
+
+===========================================================
+
+como eu preciso simular a montagem real que CBTR deverá fazer preciso iniciar com os comandos de @CPU_1, que realmente são os comandos onde o processador irá iniciar a leitura, ou seja, assim que programa for chamado RIP irá apontar dirétamente para @UBINS:, então antes de tudo terei que colocar um jmp.bin no inicio do código para que RIP vá para @CPU_1, isso me obrigou a alterar todos offsets dinovo.
+
+------------------- teste2.asm ---------------------
+
+BITS 64
+;saltando para @CPU_1 = IUbins (Ubins de controle de fluxo)
+mov r15, 0x0000000000000000
+jmp r15
+
+;PARTE DOS @UBINS:
+;fazendo start.bin
+sub rsp, 4096
+and rsp, -16
+mov rax, 0x0000000000000000
+mov rbx, 0x0000000000000000
+mov rcx, 0x0000000000000000
+
+;fazendo jmpr14
+jmp r14
+
+;print.bin, removi os comentarios para não ficar muito poluido
+movdqa [rsp+16], xmm0 				
+movdqa [rsp+32], xmm1 
+mov [rsp+40], rbx
+mov [rsp+48], rcx
+mov rcx, rax 
+mov rbx, 0x4040404040404040
+mov rdi, 0x0F0F0F0F0F0F0F0F
+and rax, rdi 
+xor rax, rbx 
+movq xmm0, rax 
+mov rax, rcx 
+shr rax, 4
+and rax, rdi
+xor rax, rbx
+movq xmm1, rax
+punpcklbw xmm1, xmm1
+punpcklbw xmm0, xmm0
+psllw xmm1, 8 
+psrlw xmm0, 8 
+por xmm1, xmm0
+movdqa [rsp], xmm1
+mov rax, 1
+mov rdi, 1
+lea rsi, [rsp]
+mov rdx, 16
+syscall
+mov rax, 60
+xor rdi, rdi
+syscall
+movdqa xmm0, [rsp+16]
+movdqa xmm1, [rsp+32]
+mov rax, rcx
+mov rbx, [rsp+40]
+mov rcx, [rsp+48]
+
+;fazendo jmpr14
+jmp r14
+
+;fazendo s1.bin
+add rax, rdx; aqui era pra ser um referencial a RIP onde esta localizado @EST [20] 0x0000000000000000
+add rax, rdx; aqui era pra ser um referencial a RIP onde esta @EST[40] 0x0000000000000000
+
+;fazendo jmpr14
+jmp r14
+
+;fazendo exit.bin
+ret
+
+;@MUBINS: ainda não tem.(print ja é uma especie de MUbin)
+;PARTE DOS @EST:
+
+;IMPORTANTE: (mov rdx) é considerado um IUbin, só estou utilizando esta metodologia provisóriamente pois isso pode tornar mais lendo o processamento devido muitos saltos para apenas 1 comando, @EST era pra adicionar o valor por ex de 20 na RAM, na mesma linha em que se encontra o código que será lido pelo CPU ou seja na RIP, porem SOs impedem este funcionamento, então deixo claro aqui que no futuro isso será tratado de forma diferente.
+
+;[20]	-> (size=8, off=195)
+;[40]	-> (size=8, off=203)
+;calculando numero 20 e 40 em hex:
+; 0   0  0  0  0 0 0 0
+;128 64 32 16  8 4 2 1
+;
+;20 = 0001 0100 = 16+4 = 20 = 0x14
+;40 = 0010 1000 = 32+8 = 40 = 0x28
+
+;fazendo @EST:[20]
+;mov rdx, 0x0000000000000014
+;jmp r14
+
+;fazendo @EST:[40]
+;mov rdx, 0x0000000000000028
+;jmp r14
+
+;PARTE DE @CPU_1:
+;fazendo IUbin jmp(start)
+mov r14, [rip + 19] ;rip26
+mov r15, encontrar offset real
+jmp r15
+
+;fazendo IUbin rax(@EST[1])
+mov rax, 0x0000000000000014
+
+;fazendo IUbin rbx(@EST[2])
+mov rbx, 0x0000000000000028
+
+;fazendo IUbin jmp(s1)
+mov r14 [rip + 19] ;rip26
+mov r15, encontrar offset real
+jmp r15
+
+;fazendo IUbin jmp(print)
+mov r14 [rip + 19] ;rip26
+mov r15, encontrar offset real
+jmp r15
+
+;fazendo IUbin jmp(exit)
+mov r14 [rip + 19] ;rip26
+mov r15, encontrar offset real
+jmp r15
+
+
+;start.bin = 12
+;jmpr14    = 53
+;print.bin = 55
+;s1.bin    = 217
+;exit.bin  = 219
+
+;@CPU_1 começa em 220
+;fim real  = 306
+
+
+--------------------------------------------------------
+LEIA WIKI PENSAMENTOS PARA MAIS DETALHES SOBRE.
+
+
