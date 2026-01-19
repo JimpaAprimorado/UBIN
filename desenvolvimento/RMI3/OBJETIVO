@@ -1,0 +1,10 @@
+por a prova o conceito.
+
+atravez de offsets calculados conseguimos controlar para onde CPU deverá ir, isso torna o sistema Ubins extremamente flexivel.
+
+
+neste teste RMI3 eu utilizo o mesmo metodo de RMI1, ou seja, RMI carrega o arquivo teste2.bin e pede Linux para CPU executa-lo.
+
+todo o proscesso de construção deste teste2.asm foi feito manualmente, incluindo os calculos de bytes por comandos, para cada IU/MU/Ubin eu o compilei separadamente e verifiquei os bytes, atravez disto consegui determinar qual era o exato offset do programa na qual o salto deveria acontecer.
+
+e foi um sucesso, funcionou perfeitamente.
