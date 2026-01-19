@@ -1,0 +1,15 @@
+1- 	crie o arquivo RMI1.asm
+
+2-	utilize os comandos no terminal:
+	nasm -f elf64 RMI1.asm -o RMI.o
+	ld RMI.o -o RMI
+
+3- 	crie o arquivo teste2.asm
+
+4- 	utilize os comandos:
+	nasm -f bin teste2.asm -o teste2.bin
+	
+	
+se quiser fazer alterações de valores leia comentarios no teste2.asm
+
+
